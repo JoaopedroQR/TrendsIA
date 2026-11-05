@@ -1,0 +1,6 @@
+Primeira Ideia:
+    - Utilizar uma LLM para resumir conteúdo de uma ata feita apartir de ferramentas de transcrição de uma reunião.
+    - Objetivo não é separar em tópicos, mas sim criar um documento síntese que extraia as principais ideias
+obtidas durante os tópicos das conversas
+
+Frase: Resumir transcrição de uma reunião;
