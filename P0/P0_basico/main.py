@@ -16,7 +16,7 @@ def carregar_parametros():
     except json.JSONDecodeError as erro:
         raise ValueError(f"config.json inválido: {erro}") from erro
 
-    obrigatorios = ["modelos", "timeout_milisegundos"]
+    obrigatorios = ["modelos", "timeout_milisegundos", "timeout_segundos", "temperatura", "max_output_tokens"]
     faltando = [chave for chave in obrigatorios if chave not in config]
     if faltando:
         raise ValueError(f"Chaves ausentes no config.json: {', '.join(faltando)}")
