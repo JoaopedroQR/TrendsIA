@@ -1,12 +1,29 @@
 import os
-import httpx
+import json
+from pathlib import Path
 from google import genai
-from google.genai import types, errors
+from google.genai import types
 from dotenv import load_dotenv
 
-TIMEOUT_MS = 15000
+CONFIG_PATH = Path(__file__).parent / "config.json"
 
-MODELOS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite']
+def carregar_parametros():
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as arquivo:
+            config = json.load(arquivo)
+    except FileNotFoundError as erro:
+        raise FileNotFoundError(f"Arquivo de configuração não encontrado: {CONFIG_PATH}") from erro
+    except json.JSONDecodeError as erro:
+        raise ValueError(f"config.json inválido: {erro}") from erro
+
+    obrigatorios = ["modelos", "timeout_milisegundos"]
+    faltando = [chave for chave in obrigatorios if chave not in config]
+    if faltando:
+        raise ValueError(f"Chaves ausentes no config.json: {', '.join(faltando)}")
+
+    return config
+
+
 
 """
 [00:01] João: Pessoal, precisamos definir a data do lançamento da funcionalidade de relatórios. [00:15] Maria: A equipe de design já entregou as telas, mas o backend ainda precisa de mais 3 dias para ajustar as consultas do banco de dados. [00:40] Carlos: Se o backend precisa de 3 dias, acho seguro movermos a homologação para quinta-feira e o lançamento oficial para a próxima segunda-feira. [01:05] João: De acordo. Maria, você avisa o time de QA sobre a mudança na homologação? [01:15] Maria: Aviso sim. Vou atualizar o card no Jira também.
@@ -21,7 +38,7 @@ def capturar_entrada():
     return texto
 
 
-def carregar_configuracao():
+def carregar_configuracao(config):
     load_dotenv()
     
     api_key = os.getenv("GEMINI_API_KEY")
@@ -32,7 +49,7 @@ def carregar_configuracao():
     try:
         client = genai.Client(
             api_key=api_key,
-            http_options=types.HttpOptions(timeout=TIMEOUT_MS)
+            http_options=types.HttpOptions(timeout=config["timeout_milisegundos"])
 
         )
     except Exception as erro:
@@ -64,16 +81,20 @@ def _eh_timeout(erro):
     nome = type(erro).__name__.lower()
     return "timeout" in nome or "timed out" in str(erro).lower()
 
-def chamar_modelo(client, prompt):
+def chamar_modelo(client, prompt, config):
 
-    for modelo in MODELOS:
+    for modelo in config["modelos"]:
         print(f"Testando modelo: {modelo}")
 
         try:
             interaction = client.interactions.create(
                 model=modelo,
                 input= prompt,
-                timeout=20,
+                timeout=config["timeout_segundos"],
+                generation_config={
+                    "temperature": config["temperatura"],
+                    "max_output_tokens": config["max_output_tokens"],
+                },
             )
 
             return interaction
@@ -103,10 +124,11 @@ def tratar_resposta(interaction):
 # Fluxo principal
 def main():
     try:
+        config = carregar_parametros()
         texto = capturar_entrada()
-        client = carregar_configuracao()
+        client = carregar_configuracao(config)
         prompt = preparar_solicitacao(texto)
-        resposta = chamar_modelo(client, prompt)
+        resposta = chamar_modelo(client, prompt, config)
         resultado = tratar_resposta(resposta)
 
         # 5. Exibição do resultado

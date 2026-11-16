@@ -19,6 +19,19 @@ O fluxo principal (`main.py`) segue estas etapas:
 - Python 3.10 ou superior
 - Uma chave de API do Gemini (obtenha no [Google AI Studio](https://aistudio.google.com/apikey))
 
+## Principais bibliotecas utilizadas
+
+| Biblioteca | Finalidade no projeto |
+|---|---|
+| `google-genai` | SDK oficial do Google Gemini, utilizado para enviar a transcrição ao modelo de IA e receber a síntese da reunião. |
+| `python-dotenv` | Carrega variáveis de ambiente do arquivo `.env`, permitindo configurar a chave `GEMINI_API_KEY` sem deixá-la diretamente no código-fonte. |
+| `json` | Biblioteca nativa do Python utilizada para ler as configurações externas do arquivo `config.json`, como os modelos disponíveis, a temperatura e o limite de tokens. |
+| `os` | Biblioteca nativa do Python utilizada para acessar variáveis de ambiente, como a chave da API do Gemini. |
+| `pathlib` | Biblioteca nativa do Python utilizada para localizar arquivos de configuração e facilitar o acesso a eles independentemente do diretório de execução. |
+
+**Observação:** `json`, `os` e `pathlib` fazem parte da biblioteca padrão do Python e não precisam ser instaladas separadamente. As demais dependências externas devem estar declaradas no arquivo `requirements.txt`.
+
+
 ## Estrutura do projeto
 
 ```
